@@ -8,7 +8,7 @@ Open a command console, enter your project directory and execute the
 following command to download the latest stable version of this bundle:
 
 ```console
-$ composer require sergiotropea/nexibundle
+$ composer require sergiotropea/nexi-bundle
 ```
 
 This command requires you to have Composer installed globally, as explained
@@ -54,3 +54,19 @@ Insert into routing file the prefix of any route
 nexi:
     resource: "@SergioTropeaNexiBundle/Resources/config/routing.yml"
 ```
+
+Step 4: Config
+-------------------------
+
+Insert into routing file the prefix of any route
+
+```yml
+// app/config/config.yml
+
+// ...
+sergio_tropea_nexi:
+    environment: test #test or production
+    url: http://sbc2.movingup.it
+    alias: ALIAS_WEB_00003045
+    key: 07V2S7IZXE2FLXYBRTYLO5K0PSPV9L31
+```    
