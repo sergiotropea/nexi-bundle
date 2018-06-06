@@ -1,0 +1,14 @@
+{
+    "name": "sergiotropea/nexi",
+    "description": "Sistema di Pagamento con Nexi",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sergio Tropea",
+            "email": "tropeasergio@gmail.com"
+        }
+    ],
+    "minimum-stability": "alpha",
+    "require": {}
+}

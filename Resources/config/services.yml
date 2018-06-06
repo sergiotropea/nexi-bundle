@@ -1,0 +1,5 @@
+services:
+    sergio_tropea_nexi.nexi:
+        class: SergioTropea\NexiBundle\Service\NexiService
+        public: true
+        arguments: ["@doctrine.orm.entity_manager","%sergio_tropea_nexi.url%","%sergio_tropea_nexi.alias%","%sergio_tropea_nexi.environment%","%sergio_tropea_nexi.key%","%kernel.root_dir%"]
