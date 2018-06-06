@@ -1,5 +1,5 @@
 {
-    "name": "sergiotropea/nexi",
+    "name": "sergiotropea/nexi-bundle",
     "description": "Sistema di Pagamento con Nexi",
     "type": "symfony-bundle",
     "license": "MIT",
