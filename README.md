@@ -66,7 +66,7 @@ Insert into routing file the prefix of any route
 // ...
 sergio_tropea_nexi:
     environment: test #test or production
-    url: http://sbc2.movingup.it
-    alias: ALIAS_WEB_00003045
-    key: 07V2S7IZXE2FLXYBRTYLO5K0PSPV9L31
+    url: <url_base>
+    alias: <alias>
+    key: <key>
 ```    
