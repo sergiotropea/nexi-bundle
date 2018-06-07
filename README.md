@@ -1,3 +1,22 @@
+Overview
+============
+
+Bundle to include Nexi Payment System, you can find service and routes set, ready to use for button - response - abort - post.  
+You can override DefaultController to improve and grow up new functionality.
+
+Below eh bundle Structure
+
+- Controller
+    - DefaltController.php
+- Entity
+    - Nexi.php
+- Resouces
+    - views
+        - Default
+             - abort.html.twig
+             - index.html.twig
+             - response.html.twig
+        
 Installation
 ============
 
@@ -69,4 +88,27 @@ sergio_tropea_nexi:
     url: <url_base>
     alias: <alias>
     key: <key>
+```
+
+Step 4: How to generate Url
+-------------------------
+
+Insert into routing file the prefix of any route
+
+```php
+// src/AppBundle/Controller/DefaultController.php
+// ... 
+
+    $nexiService = $this->get('sergio_tropea_nexi.nexi');
+
+    //Mandatory
+    $nexi = new Nexi();
+    $nexi->setCodTrans("TEST_".time());
+    $nexi->setDivisa("EUR");
+    $nexi->setImporto(1200);
+    
+    //Optional
+    
+
+    dump($nexiService->generateUrl($nexi)); 
 ```    
