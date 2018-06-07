@@ -8,7 +8,7 @@ Open a command console, enter your project directory and execute the
 following command to download the latest stable version of this bundle:
 
 ```console
-$ composer require sergiotropea/nexi-bundle
+$ composer require sergiotropea/nexi-bundle dev-master
 ```
 
 This command requires you to have Composer installed globally, as explained
