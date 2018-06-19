@@ -2,6 +2,7 @@
 
 namespace SergioTropea\NexiBundle\Controller;
 
+use AppBundle\Entity\Reservation;
 use SergioTropea\NexiBundle\Entity\Nexi;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -14,7 +15,7 @@ class DefaultController extends Controller
     /**
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function indexAction(Request $request, Nexi $nexi)
+    public function indexAction(Request $request, Nexi $nexi = null)
     {
 
         //$base_url = $this->container->get('router')->getContext()->getScheme()."://".$request->server->get('REMOTE_ADDR');
@@ -93,7 +94,7 @@ class DefaultController extends Controller
     /**
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function abortAction(Request $request, Nexi $nexi)
+    public function abortAction(Request $request, Nexi $nexi = null)
     {
         return $this->render('@SergioTropeaNexi/Default/abort.html.twig', array('parameter' => $request->query->all()));
     }
@@ -102,9 +103,19 @@ class DefaultController extends Controller
     /**
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function responseAction(Request $request, Nexi $nexi)
+    public function responseAction(Request $request, Nexi $nexi = null)
     {
+        if (!$nexi)
+            $nexi = $this->getDoctrine()->getRepository('SergioTropeaNexiBundle:Nexi')->findOneBy(array('codTrans' => $_REQUEST['codTrans']));
 
-        return $this->render('@SergioTropeaNexi/Default/response.html.twig', array('parameter' => $request->query->all()));
+        $response = $this->get('sergio_tropea_nexi.nexi')->esitoPayment($nexi);
+
+        $reservation = $this->getDoctrine()->getRepository('AppBundle:Reservation')->findOneBy(array('referred' => $nexi->getCodTrans()));
+        if ($response['esito'] == 'OK') {
+            $reservation->setStatus(1);
+            $this->getDoctrine()->getManager()->flush();
+        }
+
+        return $this->render('@SergioTropeaNexi/Default/response.html.twig', array('parameter' => $request->query->all(), 'parameter' => $response['nexi'], 'reservation' => $reservation));
     }
 }

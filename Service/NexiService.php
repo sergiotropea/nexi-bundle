@@ -27,70 +27,48 @@ class NexiService{
 
     public function generateUrl(Nexi $nexi){
 
-            if ( $this->environment  == "production" )
-                $requestUrl = "https://ecommerce.nexi.it/ecomm/ecomm/DispatcherServlet";
-            else
-                $requestUrl = "https://int-ecommerce.nexi.it/ecomm/ecomm/DispatcherServlet";
+        if ( $this->environment  == "production" )
+            $requestUrl = "https://ecommerce.nexi.it/ecomm/ecomm/DispatcherServlet";
+        else
+            $requestUrl = "https://int-ecommerce.nexi.it/ecomm/ecomm/DispatcherServlet";
 
-            $base_url = $this->url;
+        $base_url = $this->url;
 
-            //Dati obbligatori
-            $payload['alias'] = $this->alias;
-            $payload['codTrans'] = $nexi->getCodTrans();
-            $payload['divisa'] = $nexi->getDivisa();
-            $payload['importo'] = $nexi->getImporto();
-            $payload['url_back'] = $base_url."/nexi/abort/".$nexi->getId();
-            $payload['url'] = $base_url."/nexi/response/".$nexi->getId();
-            $payload['mac'] = sha1('codTrans=' . $payload['codTrans'] . 'divisa=' . $payload['divisa'] . 'importo=' . $payload['importo'] . $this->key);
-            $nexi->setMac($payload['mac']);
-            $payload['url_post'] = $base_url."/nexi/server/".$nexi->getId();
+        //Dati obbligatori
+        $payload['alias'] = $this->alias;
+        $payload['codTrans'] = $nexi->getCodTrans();
+        $payload['divisa'] = $nexi->getDivisa();
+        $payload['importo'] = $nexi->getImporto();
+        $payload['url_back'] = $base_url."/nexi/esito/abort"; // .$nexi->getId();
+        $payload['url'] = $base_url."/nexi/esito/response"; //.$nexi->getId();
+        $payload['mac'] = sha1('codTrans=' . $payload['codTrans'] . 'divisa=' . $payload['divisa'] . 'importo=' . $payload['importo'] . $this->key);
+        $nexi->setMac($payload['mac']);
+        $payload['url_post'] = $base_url."/nexi/esito/server"; //.$nexi->getId();
 
 
-            //Altri dati facoltativi
-            if ($nexi->getMail()) $payload['mail'] = $nexi->getMail();
-            if ($nexi->getLanguageId()) $payload['languageId'] = $nexi->getLanguageId();
-            if ($nexi->getDescrizione()) $payload['descrizione'] = $nexi->getDescrizione();
-            if ($nexi->getOptionCf()) $payload['OPTION_CF'] = $nexi->getOptionCf();
-            if ($nexi->getSessionId()) $payload['session_id'] = $nexi->getSessionId();
+        //Altri dati facoltativi
+        if ($nexi->getMail()) $payload['mail'] = $nexi->getMail();
+        if ($nexi->getLanguageId()) $payload['languageId'] = $nexi->getLanguageId();
+        if ($nexi->getDescrizione()) $payload['descrizione'] = $nexi->getDescrizione();
+        if ($nexi->getOptionCf()) $payload['OPTION_CF'] = $nexi->getOptionCf();
+        if ($nexi->getSessionId()) $payload['session_id'] = $nexi->getSessionId();
 
-            //Creazione dell'oggetto e Aggiornamento Dati Nexi
+        //Verifico se esiste sul database un pagamento precedentemente inserito
+        //Creazione dell'oggetto e Aggiornamento Dati Nexi
+        if ( !$this->entityManager->getRepository('SergioTropeaNexiBundle:Nexi')->findOneBy(['codTrans' => $nexi->getCodTrans()]) )
             $this->entityManager->persist($nexi);
-            $this->entityManager->flush();
+        $this->entityManager->flush();
 
-            // Calcolo MAC
-            // Parametri obbligatori
-            /*
-            $obbligatori = array(
-                'alias' => $ALIAS,
-                'importo' => $importo,
-                'divisa' => $divisa,
-                'codTrans' => $codTrans,
-                'url' => $url_response,
-                'url_back' => $url_back,
-                'mac' => $mac,
-            );
+        $aRequestParams = array();
+        foreach ($payload as $param => $value) {
+            $aRequestParams[] = $param . "=" . $value;
+        }
 
-            // Parametri facoltativi
-            $facoltativi = array(
-                'mail' => $mail,
-                'languageId' => $languageId,
-                'url_post' => $url_post,
-                'descrizione' => $descrizione,
-                'session_id' => $session_id,
-                'OPTION_CF' => $OPTION_CF,
-            );
-            */
+        $stringRequestParams = implode("&", $aRequestParams);
 
-            $aRequestParams = array();
-            foreach ($payload as $param => $value) {
-                $aRequestParams[] = $param . "=" . $value;
-            }
+        $redirectUrl = $requestUrl . "?" . $stringRequestParams;
 
-            $stringRequestParams = implode("&", $aRequestParams);
-
-            $redirectUrl = $requestUrl . "?" . $stringRequestParams;
-
-            return array('url' => $redirectUrl, 'nexi' => $nexi);
+        return array('url' => $redirectUrl, 'nexi' => $nexi);
     }
 
     /**
@@ -135,7 +113,9 @@ class NexiService{
      *                          - telefono e indirizzo di fatturazionecompleto: prevede la restituzione dell'indirizzo mail, telefono, indirizzo di fatturazione e indirizzo di spedizione	AN MAX 40
      * dati_gestione_consegna	Xml con dati di spedizione. Di seguito riportiamo la struttura dell'XML	AN MAX 700
      */
-    public function confirmPayment(Nexi $nexi){
+    public function esitoPayment(Nexi $nexi){
+
+        //localhost:8000/nexi/esito/response?mail=assistenza%40edigma.it&data=20180619&messaggio=Message+OK&cognome=Rossi&nazionalita=ITA&regione=&mac=d179c04e7265280624a3256ea8e91732a8ebe0e3&codAut=NMS76B&tipoProdotto=VISA+CLASSIC+-+CREDIT+-+N&alias=ALIAS_WEB_00003045&pan=453997XXXXXX0006&brand=VISA&orario=105002&divisa=EUR&scadenza_pan=203012&importo=4147&codiceEsito=0&languageId=ITA&session_id=6cfd59319dbfaafda03017de4d9aea6f1d82d3fa79320547&nome=Mario&check=&tipoTransazione=VBV_FULL&codiceConvenzione=00003045104&codTrans=583071114&tipo_richiesta=PA&esito=OK&TCONTAB=&OPTION_CF=&num_contratto=
 
         // Chiave segreta
         //$CHIAVESEGRETA = "<CHIAVE SEGRETA PER CALCOLO MAC>"; // Sostituire con il valore fornito da Nexi
@@ -145,7 +125,8 @@ class NexiService{
         foreach ($requiredParams as $param) {
             if (!isset($_REQUEST[$param])) {
                 $msg = 'Paramentro mancante ' . $param;
-                exit;
+                $esito = 'KO';
+                return array('nexi' => $nexi, "msg" => $msg, 'esito' => $esito);
             }
         }
 
@@ -166,6 +147,21 @@ class NexiService{
             exit;
         }
 
+        //Altri Parametri
+        $codiceEsito = $_REQUEST['codiceEsito'];
+        $brand = $_REQUEST['brand'];
+        $messaggio = $_REQUEST['messaggio'];
+
+        //Aggiornamento Oggetto Nexi
+        $nexi->setCodiceAut($_REQUEST['codAut']);
+        $nexi->setEsito($_REQUEST['esito']);
+        $nexi->setDataPagamento($_REQUEST['data']);
+        $nexi->setOrario($_REQUEST['orario']);
+        $nexi->setMessaggio($_REQUEST['messaggio']);
+        $nexi->setBrand($_REQUEST['brand']);
+        $this->entityManager->flush();
+
+        $esito=$_REQUEST['esito'];
         // Nel caso in cui non ci siano errori gestisco il parametro esito
         if ($_REQUEST['esito'] == 'OK') {
             $msg = 'La transazione ' . $_REQUEST['codTrans'] . " è avvenuta con successo; codice autorizzazione: " . $_REQUEST['codAut'];
@@ -173,6 +169,13 @@ class NexiService{
             $msg = 'La transazione ' . $_REQUEST['codTrans'] . " è stata rifiutata; descrizione errore: " . $_REQUEST['messaggio'];
         }
 
-        return array('nexi' => $nexi, "msg" => $msg);
+        return
+            array(
+                'nexi' => $nexi,
+                "msg" => $msg,
+                'esito' => $esito,
+                'codiceEsito' => $codiceEsito,
+                'messaggio' => $codiceEsito,
+            );
     }
 }
