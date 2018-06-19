@@ -2,9 +2,11 @@ nexi_index:
     path:     /nexi/{id}
     defaults: { _controller: SergioTropeaNexiBundle:Default:index }
 
+
 nexi_abort:
     path:     /nexi/esito/abort
     defaults: { _controller: SergioTropeaNexiBundle:Default:abort }
+
 
 nexi_response:
     path:     /nexi/esito/response
