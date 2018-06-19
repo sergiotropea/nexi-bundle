@@ -3,9 +3,9 @@ nexi_index:
     defaults: { _controller: SergioTropeaNexiBundle:Default:index }
 
 nexi_abort:
-    path:     /nexi/abort/{id}
+    path:     /nexi/esito/abort
     defaults: { _controller: SergioTropeaNexiBundle:Default:abort }
 
 nexi_response:
-    path:     /nexi/response/{id}
+    path:     /nexi/esito/response
     defaults: { _controller: SergioTropeaNexiBundle:Default:response }
