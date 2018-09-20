@@ -105,16 +105,31 @@ class DefaultController extends Controller
      */
     public function responseAction(Request $request, Nexi $nexi = null)
     {
+
         if (!$nexi)
             $nexi = $this->getDoctrine()->getRepository('SergioTropeaNexiBundle:Nexi')->findOneBy(array('codTrans' => $_REQUEST['codTrans']));
 
         $response = $this->get('sergio_tropea_nexi.nexi')->esitoPayment($nexi);
 
-        $reservation = $this->getDoctrine()->getRepository('AppBundle:Reservation')->findOneBy(array('referred' => $nexi->getCodTrans()));
+        $referred = explode("-",$nexi->getCodTrans());
+
+        $reservation = $this->getDoctrine()->getRepository('AppBundle:Reservation')->findOneBy(array('referred' => $referred[0]));
+
+//      dump($reservation);die();
+
         if ($response['esito'] == 'OK') {
             $reservation->setStatus(1);
             $this->getDoctrine()->getManager()->flush();
+
+            //Richiamare la funzione che conferma il pagamento
+            $sbc = $this->get('app.soap.sbc');
+            $sbc->setModResPay($reservation, $response['nexi']);
+        }else{
+            $reservation->setStatus(0);
+            $this->getDoctrine()->getManager()->flush();
         }
+
+        $nexi->setCodTrans($referred[0]);
 
         return $this->render('@SergioTropeaNexi/Default/response.html.twig', array('parameter' => $request->query->all(), 'parameter' => $response['nexi'], 'reservation' => $reservation));
     }
